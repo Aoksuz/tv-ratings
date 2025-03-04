@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface TvShow {
@@ -23,7 +23,7 @@ const shows = ref<TvShow[]>([])
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
 const router = useRouter()
-const showShadows = ref<Map<number, string>>(new Map()) // Store extracted colors for shadow
+const showShadows = ref<Record<number, string>>({})
 const hoveredShow = ref<number | null>(null)
 const searchQuery = ref('')
 const searchResults = ref<SearchResult[]>([])
@@ -41,10 +41,11 @@ async function fetchTopRatedShows() {
       ),
     )
 
-    // Filter: Exclude "Nature" genre and only include English shows
     shows.value = responses
       .filter((show) => show.language === 'English')
       .filter((show) => !show.genres.includes('Nature'))
+
+    extractColors()
   } catch (err) {
     error.value = 'Failed to fetch top-rated shows'
     console.error(err)
@@ -52,6 +53,7 @@ async function fetchTopRatedShows() {
     loading.value = false
   }
 }
+onMounted(fetchTopRatedShows)
 
 // Extract dominant color and apply as shadow
 function extractColors() {
@@ -59,7 +61,7 @@ function extractColors() {
     if (!show.image) return
 
     const img = new Image()
-    img.crossOrigin = 'Anonymous' // Prevent CORS issues
+    img.crossOrigin = 'Anonymous'
     img.src = show.image.medium
 
     img.onload = () => {
@@ -67,17 +69,14 @@ function extractColors() {
       const ctx = canvas.getContext('2d')
       if (!ctx) return
 
-      // Set canvas size and draw image
       canvas.width = img.width
       canvas.height = img.height
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
-      // Get pixel data from center of image
       const { data } = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1)
       const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`
 
-      // Store extracted shadow color
-      showShadows.value.set(show.id, color)
+      showShadows.value[show.id] = color
     }
   })
 }
@@ -86,8 +85,6 @@ function extractColors() {
 function goToShowDetails(showId: number) {
   router.push(`/show/${showId}`)
 }
-
-onMounted(fetchTopRatedShows)
 
 // Fetch search results when query has 3+ characters
 async function fetchSearchResults() {
@@ -99,7 +96,6 @@ async function fetchSearchResults() {
 
   try {
     const response = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
-    console.log('🔥', searchQuery.value)
     searchResults.value = await response.json()
     showDropdown.value = searchResults.value.length > 0
   } catch (error) {
@@ -107,7 +103,6 @@ async function fetchSearchResults() {
   }
 }
 
-// Watch searchQuery and fetch when updated
 watch(searchQuery, fetchSearchResults)
 </script>
 
@@ -165,8 +160,8 @@ watch(searchQuery, fetchSearchResults)
           class="rounded-lg transition-shadow duration-300"
           :style="{
             boxShadow:
-              hoveredShow === show.id && showShadows.get(show.id)
-                ? `0px 8px 20px ${showShadows.get(show.id)}`
+              hoveredShow === show.id && showShadows[show.id]
+                ? `0px 8px 20px ${showShadows[show.id]}`
                 : 'none',
           }"
           @mouseover="hoveredShow = show.id"

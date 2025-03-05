@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/tv-ratings/**",
+      "source": "/tv-ratings/:path*",
       "destination": "/tv-ratings/index.html"
     }
   ]

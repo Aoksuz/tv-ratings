@@ -151,7 +151,10 @@ watch(searchQuery, fetchSearchResults)
     <p v-if="loading">Loading shows...</p>
     <p v-if="error">{{ error }}</p>
 
-    <div v-if="!loading && !error" class="grid sm:grid-cols-3 md:grid-cols-5 gap-8">
+    <div
+      v-if="!loading && !error"
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-8"
+    >
       <div
         v-for="show in shows"
         :key="show.id"

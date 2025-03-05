@@ -9,7 +9,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory('/dev/tv-ratings/'),
+  history: createWebHistory('/tv-ratings/'),
   routes,
 })
 

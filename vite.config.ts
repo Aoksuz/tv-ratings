@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/tv-ratings/',
+  base: '/dev/tv-ratings/',
   plugins: [vue(), vueJsx(), vueDevTools(), tailwindcss()],
   resolve: {
     alias: {

@@ -42,8 +42,6 @@ async function fetchTopRatedShows() {
     )
 
     shows.value = responses
-      .filter((show) => show.language === 'English')
-      .filter((show) => !show.genres.includes('Nature'))
 
     extractColors()
   } catch (err) {
@@ -96,7 +94,14 @@ async function fetchSearchResults() {
 
   try {
     const response = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
-    searchResults.value = await response.json()
+    const data = await response.json()
+    console.log(data)
+
+    searchResults.value = data.filter(
+      (item: { show: { genres: string[] } }) => !item.show.genres.includes('Adult'),
+    )
+    console.log(searchResults.value)
+
     showDropdown.value = searchResults.value.length > 0
   } catch (error) {
     console.error('Failed to fetch search results', error)

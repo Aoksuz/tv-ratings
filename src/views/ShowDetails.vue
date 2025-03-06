@@ -20,7 +20,7 @@ const show = ref<ShowDetails | null>(null)
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
 
-async function fetchShowDetails() {
+const fetchShowDetails = async () => {
   try {
     const response = await fetch(`https://api.tvmaze.com/shows/${showId}`)
     if (!response.ok) throw new Error('Show not found')
@@ -37,18 +37,20 @@ onMounted(fetchShowDetails)
 </script>
 
 <template>
-  <div>
-    <p v-if="loading">Loading show details...</p>
-    <p v-if="error">{{ error }}</p>
+  <div class="flex flex-col gap-8 md:flex-row">
+    <div class="w-[200px]">
+      <p v-if="loading">Loading show details...</p>
+      <p v-if="error">{{ error }}</p>
 
-    <div v-if="show">
-      <h1>{{ show.name }}</h1>
-      <img v-if="show.image" :src="show.image.original" :alt="show.name" width="300" />
-      <p><strong>Genres:</strong> {{ show.genres.join(', ') }}</p>
-      <p><strong>Language:</strong> {{ show.language }}</p>
-      <p><strong>Rating:</strong> ⭐ {{ show.rating.average || 'N/A' }}</p>
-      <p v-html="show.summary"></p>
-      <a v-if="show.officialSite" :href="show.officialSite" target="_blank">Visit Official Site</a>
+      <div v-if="show" class="flex flex-col gap-2">
+        <img v-if="show.image" :src="show.image.original" :alt="show.name" width="300" />
+        <h1 class="text-2xl">{{ show.name }}</h1>
+        <p>Rating: ⭐ {{ show.rating.average || 'N/A' }}</p>
+        <div class="flex flex-row gap-1">
+          <p v-for="genre in show.genres" class="bg-gray-700 px-[5px] rounded-sm">{{ genre }}</p>
+        </div>
+      </div>
     </div>
+    <div><p class="text-4xl">This section is under development</p></div>
   </div>
 </template>

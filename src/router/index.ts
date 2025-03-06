@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '../views/Home.vue'
 import ShowDetails from '../views/ShowDetails.vue'
@@ -9,7 +9,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory('/tv-ratings/'),
+  history: createWebHistory('/dev/tv-ratings/'),
   routes,
 })
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import getRatingColor from '../utils/getRatingColor'
 
 const route = useRoute()
 const showId = route.params.id // Get show ID from URL
@@ -17,8 +18,16 @@ interface ShowDetails {
   premiered?: string
   ended?: string
 }
+interface Season {
+  name: string
+  season: number
+  number: number
+  airdate: string
+  rating: { average: number }
+}
 
 const show = ref<ShowDetails | null>(null)
+const seasons = ref<Season[][] | null>(null)
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
 const runTime = ref<string>('')
@@ -35,7 +44,7 @@ const fetchShowDetails = async () => {
     loading.value = false
   }
 }
-console.log(show)
+onMounted(fetchShowDetails)
 
 // Watch for changes in `show` and update `runTime`
 watch(show, (newShow) => {
@@ -46,7 +55,37 @@ watch(show, (newShow) => {
   }
 })
 
-onMounted(fetchShowDetails)
+const fetchEpisodes = async () => {
+  try {
+    const response = await fetch(`https://api.tvmaze.com/shows/${showId}/episodes`)
+    if (!response.ok) throw new Error('Episodes not found')
+    const data: Season[] = await response.json()
+
+    seasons.value = Object.values(
+      data.reduce<Record<number, Season[]>>((acc, episode) => {
+        if (!acc[episode.season]) {
+          acc[episode.season] = []
+        }
+        acc[episode.season].push(episode)
+        return acc
+      }, {}),
+    )
+  } catch (err) {
+    error.value = 'Failed to load episodes'
+    console.error(err)
+  }
+}
+
+// Watch for changes in `show` and update `runTime`
+watch(show, (newShow) => {
+  if (newShow?.premiered) {
+    const premiered = newShow?.premiered.substring(0, 4)
+    const ended = newShow?.ended ? newShow.ended.substring(0, 4) : 'now'
+    runTime.value = `${premiered}-${ended}`
+  }
+})
+
+onMounted(fetchEpisodes)
 </script>
 
 <template>
@@ -65,6 +104,24 @@ onMounted(fetchShowDetails)
         </div>
       </div>
     </div>
-    <div><p class="text-4xl">This section is under development</p></div>
+    <div>
+      <p class="text-4xl pb-16">This section is under development</p>
+      <div class="flex gap-2">
+        <div
+          v-for="(season, index) in seasons"
+          :key="`season-${index}`"
+          class="flex flex-col gap-2 min-w-[50px]"
+        >
+          <div
+            v-for="episode in season"
+            :key="episode.number"
+            class="flex items-center justify-center px-2 py-1 rounded-sm text-white hover:cursor-pointer"
+            :class="getRatingColor(episode.rating?.average)"
+          >
+            {{ episode.rating?.average ?? '?' }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

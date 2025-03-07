@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -14,11 +14,14 @@ interface ShowDetails {
   rating: { average: number | null }
   image?: { medium: string; original: string }
   officialSite?: string
+  premiered?: string
+  ended?: string
 }
 
 const show = ref<ShowDetails | null>(null)
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
+const runTime = ref<string>('')
 
 const fetchShowDetails = async () => {
   try {
@@ -32,6 +35,16 @@ const fetchShowDetails = async () => {
     loading.value = false
   }
 }
+console.log(show)
+
+// Watch for changes in `show` and update `runTime`
+watch(show, (newShow) => {
+  if (newShow?.premiered) {
+    const premiered = newShow?.premiered.substring(0, 4)
+    const ended = newShow?.ended ? newShow.ended.substring(0, 4) : 'now'
+    runTime.value = `${premiered}-${ended}`
+  }
+})
 
 onMounted(fetchShowDetails)
 </script>
@@ -45,8 +58,9 @@ onMounted(fetchShowDetails)
       <div v-if="show" class="flex flex-col gap-2">
         <img v-if="show.image" :src="show.image.original" :alt="show.name" width="300" />
         <h1 class="text-2xl">{{ show.name }}</h1>
-        <p>Rating: ⭐ {{ show.rating.average || 'N/A' }}</p>
-        <div class="flex flex-row gap-1">
+        <p v-if="show?.premiered" class="text-sm">({{ runTime }})</p>
+        <p>⭐ {{ show.rating.average || 'N/A' }}</p>
+        <div class="flex flex-row gap-1 flex-wrap">
           <p v-for="genre in show.genres" class="bg-gray-700 px-[5px] rounded-sm">{{ genre }}</p>
         </div>
       </div>

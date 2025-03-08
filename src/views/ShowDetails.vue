@@ -18,7 +18,7 @@ interface ShowDetails {
   premiered?: string
   ended?: string
 }
-interface Season {
+interface Episode {
   name: string
   season: number
   number: number
@@ -27,7 +27,7 @@ interface Season {
 }
 
 const show = ref<ShowDetails | null>(null)
-const seasons = ref<Season[][] | null>(null)
+const seasons = ref<Episode[][] | null>(null)
 const seasonLength = ref<number | null>(null)
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
@@ -51,10 +51,10 @@ const fetchEpisodes = async () => {
   try {
     const response = await fetch(`https://api.tvmaze.com/shows/${showId}/episodes`)
     if (!response.ok) throw new Error('Episodes not found')
-    const data: Season[] = await response.json()
+    const data: Episode[] = await response.json()
 
     seasons.value = Object.values(
-      data.reduce<Record<number, Season[]>>((acc, episode) => {
+      data.reduce<Record<number, Episode[]>>((acc, episode) => {
         if (!acc[episode.season]) {
           acc[episode.season] = []
         }
@@ -85,7 +85,7 @@ onMounted(fetchEpisodes)
 
 <template>
   <div class="flex flex-col gap-8 md:flex-row">
-    <div class="w-[200px]">
+    <div class="w-[200px] min-w-[200px]">
       <p v-if="loading">Loading show details...</p>
       <p v-if="error">{{ error }}</p>
 
@@ -116,9 +116,16 @@ onMounted(fetchEpisodes)
           <div
             v-for="episode in season"
             :key="episode.number"
-            class="flex items-center justify-center px-2 py-1 min-w-[50px] rounded-sm text-white hover:cursor-pointer"
+            class="relative group flex items-center justify-center px-2 py-1 min-w-[50px] rounded-sm text-white hover:cursor-pointer"
             :class="getRatingColor(episode.rating?.average)"
           >
+            <div
+              class="z-1 min-w-max absolute hidden group-hover:block bg-gray-800 text-white text-xs py-[5px] px-3 rounded-md -top-6 left-1/2 transform -translate-x-1/2"
+            >
+              <span class="text-sm">
+                {{ episode.name }}
+              </span>
+            </div>
             {{ episode.rating?.average ?? '?' }}
           </div>
         </div>

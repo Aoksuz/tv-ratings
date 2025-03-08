@@ -28,6 +28,7 @@ interface Season {
 
 const show = ref<ShowDetails | null>(null)
 const seasons = ref<Season[][] | null>(null)
+const seasonLength = ref<number | null>(null)
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
 const runTime = ref<string>('')
@@ -46,15 +47,6 @@ const fetchShowDetails = async () => {
 }
 onMounted(fetchShowDetails)
 
-// Watch for changes in `show` and update `runTime`
-watch(show, (newShow) => {
-  if (newShow?.premiered) {
-    const premiered = newShow?.premiered.substring(0, 4)
-    const ended = newShow?.ended ? newShow.ended.substring(0, 4) : 'now'
-    runTime.value = `${premiered}-${ended}`
-  }
-})
-
 const fetchEpisodes = async () => {
   try {
     const response = await fetch(`https://api.tvmaze.com/shows/${showId}/episodes`)
@@ -70,6 +62,9 @@ const fetchEpisodes = async () => {
         return acc
       }, {}),
     )
+    seasonLength.value = seasons.value.length
+      ? Math.max(...seasons.value.map((season) => season.length))
+      : 0
   } catch (err) {
     error.value = 'Failed to load episodes'
     console.error(err)
@@ -107,15 +102,21 @@ onMounted(fetchEpisodes)
     <div>
       <p class="text-4xl pb-16">This section is under development</p>
       <div class="flex gap-2">
+        <div class="grid grid-rows-[32px] pt-[32px] gap-2">
+          <div v-for="n in seasonLength" :key="n" class="flex items-center justify-end pr-1">
+            e{{ n }}
+          </div>
+        </div>
         <div
-          v-for="(season, index) in seasons"
-          :key="`season-${index}`"
-          class="flex flex-col gap-2 min-w-[50px]"
+          v-for="(season, i) in seasons"
+          :key="`season-${i}`"
+          class="flex flex-col gap-2 items-center"
         >
+          {{ i + 1 }}
           <div
             v-for="episode in season"
             :key="episode.number"
-            class="flex items-center justify-center px-2 py-1 rounded-sm text-white hover:cursor-pointer"
+            class="flex items-center justify-center px-2 py-1 min-w-[50px] rounded-sm text-white hover:cursor-pointer"
             :class="getRatingColor(episode.rating?.average)"
           >
             {{ episode.rating?.average ?? '?' }}

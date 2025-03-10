@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import Search from '../components/Search'
+import useNavigation from '@/utils/useNavigation'
+
+const { goToShowDetails } = useNavigation()
 
 interface TvShow {
   id: number
@@ -11,23 +14,11 @@ interface TvShow {
   image?: { medium: string; original: string }
 }
 
-interface SearchResult {
-  show: {
-    id: number
-    name: string
-    image?: { medium: string }
-  }
-}
-
 const shows = ref<TvShow[]>([])
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
-const router = useRouter()
 const showShadows = ref<Record<number, string>>({})
 const hoveredShow = ref<number | null>(null)
-const searchQuery = ref('')
-const searchResults = ref<SearchResult[]>([])
-const showDropdown = ref(false)
 const topRatedShows = [
   169, 82, 179, 180, 204, 335, 396, 465, 555, 787, 3291, 30770, 2, 118, 206, 216, 251, 527, 158,
   166,
@@ -78,73 +69,16 @@ function extractColors() {
     }
   })
 }
-
-// Navigate to Show Details Page
-function goToShowDetails(showId: number) {
-  router.push(`/show/${showId}`)
-}
-
-// Fetch search results when query has 3+ characters
-async function fetchSearchResults() {
-  if (searchQuery.value.length < 3) {
-    searchResults.value = []
-    showDropdown.value = false
-    return
-  }
-
-  try {
-    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${searchQuery.value}`)
-    const data = await response.json()
-    console.log(data)
-
-    searchResults.value = data.filter(
-      (item: { show: { genres: string[] } }) => !item.show.genres.includes('Adult'),
-    )
-    console.log(searchResults.value)
-
-    showDropdown.value = searchResults.value.length > 0
-  } catch (error) {
-    console.error('Failed to fetch search results', error)
-  }
-}
-
-watch(searchQuery, fetchSearchResults)
 </script>
 
 <template>
-  <div>
-    <h1 class="text-2xl font-bold pb-4">Look up any show</h1>
-    <div class="relative mx-auto">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Search TV Shows..."
-        class="w-[100%] max-w-[300px] p-2 border rounded-md"
-      />
-      <ul
-        v-if="showDropdown"
-        class="absolute w-[100%] max-w-[300px] mt-1 bg-white border rounded-md max-h-60 overflow-auto z-1"
-      >
-        <li
-          v-for="result in searchResults"
-          :key="result.show.id"
-          @click="goToShowDetails(result.show.id)"
-          class="flex items-center gap-2 p-1 cursor-pointer hover:bg-blue-100 text-black h-[56px]"
-        >
-          <div class="grid grid-cols-[auto_auto] items-center gap-4">
-            <div class="w-10">
-              <img
-                v-if="result.show.image"
-                :src="result.show.image.medium"
-                :alt="result.show.name"
-                class="w-10 h-12"
-              />
-            </div>
-            <span>{{ result.show.name }}</span>
-          </div>
-        </li>
-      </ul>
-    </div>
+  <div class="flex flex-col items-center text-center">
+    <h1 class="text-2xl font-bold pb-4">Explore shows and episodes through charts</h1>
+    <span class="text-md pb-4 max-w-[600px]"
+      >Navigate the ratings landscape, discover underrated gems, and plot your perfect
+      binge-watching adventure through the world of series — all in one view!</span
+    >
+    <Search />
   </div>
   <div class="mx-auto">
     <h2 class="text-2xl font-bold pb-4">Best rated shows</h2>

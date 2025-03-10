@@ -1,20 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import getRatingColor from '../utils/getRatingColor'
+import getRatingColor from '@/utils/getRatingColor'
 
 const route = useRoute()
 const showId = route.params.id // Get show ID from URL
 
 interface ShowDetails {
-  id: number
   name: string
-  summary: string
   genres: string[]
-  language: string
   rating: { average: number | null }
   image?: { medium: string; original: string }
-  officialSite?: string
   premiered?: string
   ended?: string
 }
@@ -100,7 +96,6 @@ onMounted(fetchEpisodes)
       </div>
     </div>
     <div>
-      <p class="text-4xl pb-16">This section is under development</p>
       <div class="flex gap-2">
         <div class="grid grid-rows-[32px] pt-[32px] gap-2">
           <div v-for="n in seasonLength" :key="n" class="flex items-center justify-end pr-1">

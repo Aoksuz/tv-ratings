@@ -28,6 +28,13 @@ async function fetchSearchResults() {
 }
 
 watch(searchQuery, fetchSearchResults)
+
+const handleClick = (showId) => {
+  goToShowDetails(showId, () => {
+    showDropdown.value = false
+    searchQuery.value = ''
+  })
+}
 </script>
 
 <template>
@@ -36,16 +43,16 @@ watch(searchQuery, fetchSearchResults)
       v-model="searchQuery"
       type="text"
       placeholder="Search TV Shows..."
-      class="w-[100%] max-w-[300px] px-2 py-1 border rounded-md text-gray-300 text-sm"
+      class="w-[100%] max-w-[300px] px-2 py-1 border rounded-md text-gray-300 text-sm pl-4"
     />
     <ul
       v-if="showDropdown"
-      class="absolute w-[100%] max-w-[300px] mt-1 bg-white border rounded-md max-h-60 overflow-auto z-10"
+      class="absolute w-[100%] max-w-[300px] mt-1 top-[30px] bg-gray-200 border rounded-md max-h-60 overflow-auto z-1"
     >
       <li
         v-for="result in searchResults"
         :key="result.show.id"
-        @click="goToShowDetails(result.show.id, () => (showDropdown = false))"
+        @click="handleClick(result.show.id)"
         class="flex items-center gap-2 p-1 cursor-pointer hover:bg-blue-100 text-black h-[56px]"
       >
         <div class="grid grid-cols-[auto_auto] items-center gap-4">

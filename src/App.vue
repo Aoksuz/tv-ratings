@@ -7,7 +7,15 @@ import Search from '@/components/Search'
     <nav class="grid grid-cols-2 md:grid-cols-3 items-center">
       <router-link to="/" class="flex items-center gap-4 whitespace-nowrap">
         <img src="@/assets/logo-grey.svg" alt="logo" class="w-12 h-auto" />
-        <span class="text-2xl hidden sm:block">TV Ratings</span>
+        <span
+          :class="{
+            'text-2xl': true,
+            hidden: $route.path !== '/',
+            'sm:block': $route.path !== '/',
+          }"
+        >
+          TV Ratings
+        </span>
       </router-link>
       <Search v-if="$route.path !== '/'" class="col-start-3 md:col-start-2" />
     </nav>
